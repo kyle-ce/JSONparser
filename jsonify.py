@@ -31,7 +31,7 @@ def dictionify(value_list,field_list):
         json_dict[id]=id_dict
         for field in field_list:
             formats_last_entry(field_list,field,value_list,value)
-            id_dict[field]=value[field_list.index(field)]
+            id_dict[field.strip('\"')]=value[field_list.index(field)].strip('\"')
     return json_dict
 
 """---------------------------------
