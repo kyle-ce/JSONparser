@@ -23,20 +23,21 @@ def jsonify(entry):
 ----------------------------------""" 
 def dictionify(value_list,field_list):
     json_dict={}
+    #unique name for each dictionary entry 
     id=0
     for value in value_list:
         id_dict={}
         id+=1
         json_dict[id]=id_dict
         for field in field_list:
-            checkIndex(field_list,field,value_list,value)
+            formats_last_entry(field_list,field,value_list,value)
             id_dict[field]=value[field_list.index(field)]
     return json_dict
 
 """---------------------------------
-    Checks bounds of Index 
+        Formats Last Entry
 ----------------------------------""" 
-def checkIndex(field_list, field_value,value_list, value):
+def formats_last_entry(field_list, field_value,value_list, value):
     field_value_index=field_list.index(field_value)
     value_index = value_list.index(value)
     #some data in xml file is missing this checks for indexError in that case
@@ -57,7 +58,7 @@ with open('responseLine.txt')as f:
 #parse feild into list
 field_list = lines[0].split(',')
 #manualy strip the invalid hex char at end of field value
-field_list[26]=field_list[26].strip('&#xd;\n')
+field_list[-1]=field_list[-1].strip('&#xd;\n')
 
 #parse values into list 
 value_list_1d = []
