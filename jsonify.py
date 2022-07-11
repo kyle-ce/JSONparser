@@ -9,9 +9,9 @@ def dev_print_dict_n(dict):
         print(k,':',v)
 
 """---------------------------------
-        Converts list to Json
+       Parse String into List 
 ----------------------------------"""  
-def jsonify(entry):
+def parse_string(entry):
     # Splits String into list indexted by deliminator ',' except for in quotes 
     # (?<=...) is a "positive lookbehind assertion". It causes pattern (in this case, just a comma, ",") to match commas in the string only if they are preceded by the pattern given by [\",], which means "either a quotation mark or a comma".
     # (?=...) is a "positive lookahead assertion". It causes pattern to match commas in the string only if they are followed by the pattern specified as (again, [\",]: either a quotation mark or a comma).
@@ -30,54 +30,60 @@ def dictionify(value_list,field_list):
         id+=1
         json_dict[id]=id_dict
         for field in field_list:
-            formats_last_entry(field_list,field,value_list,value)
+            #strip quotes from data so JSON dumps cleanly  
             id_dict[field.strip('\"')]=value[field_list.index(field)].strip('\"')
     return json_dict
 
 """---------------------------------
-        Formats Last Entry
+        Formats Null Data 
 ----------------------------------""" 
-def formats_last_entry(field_list, field_value,value_list, value):
-    field_value_index=field_list.index(field_value)
-    value_index = value_list.index(value)
+def formats_null_data(value):
+    LAST_ENTRY=26
     #some data in xml file is missing this checks for indexError in that case
     try:
-       entry = value_list[value_index][field_value_index]
-       #strips return carriage from original xml data 
-       value_list[value_index][field_value_index] = entry.strip('&#xd;\n')
+       entry = value[LAST_ENTRY]
     except IndexError:
         #append null data to fill index that is missing
-        value_list[value_index].append('')
+        value.append('')
+
+"""---------------------------------
+        JSON Formater 
+----------------------------------""" 
+def json_formater(value):
+    SUBMITTED_AMOUNT_INDEX=25
+    LINE_ITEM_INVOICE_ID_INDEX=26
+    for row in value:
+        #remove return carriage from last value entry 
+        row[-1]=row[-1].strip('(&#xd;\n)||(,&#xd;\n)')
+        #add null data
+        formats_null_data(row)
+        
 
 __name__='__main__'
-
-#parse response into list 
 with open('responseLine.txt')as f:
     lines = f.readlines()
-
-#parse feild into list
+'''---------------------------------
+parse file into two lists: field and value
+---------------------------------'''
 field_list = lines[0].split(',')
 #manualy strip the invalid hex char at end of field value
 field_list[-1]=field_list[-1].strip('&#xd;\n')
-
-#parse values into list 
 value_list_1d = []
 for l in lines[1:]:
     value_list_1d.append(l)
-#split list into individual values     
 value_list=[]
 for entry in value_list_1d:
-    json_obj = jsonify(entry)
-    value_list.append(json_obj)
+    indexed_list = parse_string(entry)
+    value_list.append(indexed_list)
 
+
+'''---------------------------------
+Convert lists into dictionary
+use dictionary to create Json
+---------------------------------'''
+#format value list manually to fit json requirements
+json_formater(value_list)
 #create dictionary with field and values 
 json_dict=dictionify(value_list,field_list)
-
 # dev_print_dict_n(json_dict)
-
-#convert dictionary into json dump to output
 print(json.dumps(json_dict))
-
-
-
-
